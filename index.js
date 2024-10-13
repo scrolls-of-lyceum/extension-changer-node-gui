@@ -83,15 +83,25 @@ const dynamicLayout = new FlexLayout();
 dynamicExtensionContainer.setLayout(dynamicLayout);
 layout.addWidget(dynamicExtensionContainer);
 
+// Store new extension pairs
+const extensionPairs = [];
+
 // Set the central widget
 win.setCentralWidget(centralWidget);
 
 // Function to update the affected file count
 function updateAffectedFileCount(directoryPath) {
-  const sourceExtension = sourceExtensionInput.text();
-  const affectedFileCount = listFilesRecursively(directoryPath).filter((file) =>
-    file.endsWith(sourceExtension)
-  ).length;
+  const allSourceExtensions = [
+    sourceExtensionInput.text(),
+    ...extensionPairs.map((pair) => pair.source),
+  ];
+  const affectedFileCount = allSourceExtensions.reduce((count, ext) => {
+    return (
+      count +
+      listFilesRecursively(directoryPath).filter((file) => file.endsWith(ext))
+        .length
+    );
+  }, 0);
 
   jsFileCountLabel.setText(`Files to be affected: ${affectedFileCount}`);
 }
@@ -124,25 +134,31 @@ selectDirButton.addEventListener("clicked", () => {
 // Event: Change file extensions
 changeExtensionsButton.addEventListener("clicked", () => {
   const directoryPath = pathInput.text();
-  const sourceExtension = sourceExtensionInput.text();
-  const targetExtension = targetExtensionInput.text();
 
-  if (directoryPath) {
-    const affectedFileCount = changeFileExtensions(
+  // Change the first pair
+  const affectedFileCounts = changeFileExtensions(
+    directoryPath,
+    sourceExtensionInput.text(),
+    targetExtensionInput.text()
+  );
+
+  // Change additional pairs
+  extensionPairs.forEach((pair) => {
+    affectedFileCounts += changeFileExtensions(
       directoryPath,
-      sourceExtension,
-      targetExtension
+      pair.source,
+      pair.target
     );
+  });
 
-    // Refresh tree view after renaming
-    fileTreeWidget.clear();
-    const rootItem = new QTreeWidgetItem([directoryPath]);
-    fileTreeWidget.addTopLevelItem(rootItem);
-    populateTreeWithFiles(rootItem, directoryPath);
+  // Refresh tree view after renaming
+  fileTreeWidget.clear();
+  const rootItem = new QTreeWidgetItem([directoryPath]);
+  fileTreeWidget.addTopLevelItem(rootItem);
+  populateTreeWithFiles(rootItem, directoryPath);
 
-    // Update the label after renaming
-    jsFileCountLabel.setText(`Files affected: ${affectedFileCount}`);
-  }
+  // Update the label after renaming
+  jsFileCountLabel.setText(`Files affected: ${affectedFileCounts}`);
 });
 
 // Update affected file count when extensions change
@@ -153,35 +169,36 @@ sourceExtensionInput.addEventListener("textChanged", () => {
   }
 });
 
-targetExtensionInput.addEventListener("textChanged", () => {
-  const directoryPath = pathInput.text();
-  if (directoryPath) {
-    updateAffectedFileCount(directoryPath);
-  }
-});
-
 // Event: Add new pair of extensions
 addPairButton.addEventListener("clicked", () => {
   const newSourceInput = new QLineEdit();
   const newTargetInput = new QLineEdit();
-  newSourceInput.setPlaceholderText("New Source Extension");
+  const newSourceLabel = new QLabel();
+  const newTargetLabel = new QLabel();
+
+  newSourceLabel.setText("New Source Extension:");
   newTargetInput.setPlaceholderText("New Target Extension");
 
+  dynamicLayout.addWidget(newSourceLabel);
   dynamicLayout.addWidget(newSourceInput);
+  dynamicLayout.addWidget(newTargetLabel);
   dynamicLayout.addWidget(newTargetInput);
 
+  // Store the new pair when the inputs change
   newSourceInput.addEventListener("textChanged", () => {
-    const directoryPath = pathInput.text();
-    if (directoryPath) {
-      updateAffectedFileCount(directoryPath);
-    }
+    extensionPairs.push({
+      source: newSourceInput.text(),
+      target: newTargetInput.text(),
+    });
+    updateAffectedFileCount(pathInput.text());
   });
 
   newTargetInput.addEventListener("textChanged", () => {
-    const directoryPath = pathInput.text();
-    if (directoryPath) {
-      updateAffectedFileCount(directoryPath);
-    }
+    extensionPairs.push({
+      source: newSourceInput.text(),
+      target: newTargetInput.text(),
+    });
+    updateAffectedFileCount(pathInput.text());
   });
 });
 
