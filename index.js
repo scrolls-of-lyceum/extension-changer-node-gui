@@ -177,7 +177,10 @@ addPairButton.addEventListener("clicked", () => {
   const newTargetLabel = new QLabel();
 
   newSourceLabel.setText("New Source Extension:");
-  newTargetInput.setPlaceholderText("New Target Extension");
+  newTargetInput.setPlaceholderText(".txt");
+
+  newTargetLabel.setText("New Target Extension:");
+  newSourceInput.setPlaceholderText(".tft");
 
   dynamicLayout.addWidget(newSourceLabel);
   dynamicLayout.addWidget(newSourceInput);
