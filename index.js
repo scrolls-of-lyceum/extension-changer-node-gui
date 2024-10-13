@@ -132,11 +132,11 @@ selectDirButton.addEventListener("clicked", () => {
 });
 
 // Event: Change file extensions
+// Event: Change file extensions
 changeExtensionsButton.addEventListener("clicked", () => {
   const directoryPath = pathInput.text();
 
-  // Change the first pair
-  const affectedFileCounts = changeFileExtensions(
+  let affectedFileCounts = changeFileExtensions(
     directoryPath,
     sourceExtensionInput.text(),
     targetExtensionInput.text()
