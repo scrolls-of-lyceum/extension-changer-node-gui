@@ -6,8 +6,8 @@ const {
   QPushButton,
   FlexLayout,
   QFileDialog,
-  QListWidget,
-  QListWidgetItem,
+  QTreeWidget,
+  QTreeWidgetItem,
 } = require("@nodegui/nodegui");
 const fs = require("fs");
 const path = require("path");
@@ -16,37 +16,75 @@ const path = require("path");
 const win = new QMainWindow();
 win.setWindowTitle("File Extension Changer");
 
+// Set window size (make it bigger)
+win.resize(800, 600);
+
 // Create the central widget and layout
 const centralWidget = new QWidget();
 const layout = new FlexLayout();
-centralWidget.setLayout(layout); // Set layout once
+centralWidget.setLayout(layout);
 
 // Add input fields and buttons
 const inputLabel = new QLabel();
 inputLabel.setText("Selected Directory:");
-layout.addWidget(inputLabel); // Correctly add widget to layout
+layout.addWidget(inputLabel);
 
 const pathInput = new QLineEdit();
 layout.addWidget(pathInput);
 
-const fileListWidget = new QListWidget();
-layout.addWidget(fileListWidget);
+// Create a QTreeWidget to display the file tree
+const fileTreeWidget = new QTreeWidget();
+fileTreeWidget.setHeaderLabels(["File/Folder"]);
+layout.addWidget(fileTreeWidget);
+
+// Label to show the count of affected files
+const jsFileCountLabel = new QLabel();
+jsFileCountLabel.setText("Files to be affected: 0");
+layout.addWidget(jsFileCountLabel);
+
+// Input for source extension
+const sourceExtensionLabel = new QLabel();
+sourceExtensionLabel.setText("Source Extension (e.g., .js):");
+layout.addWidget(sourceExtensionLabel);
+
+const sourceExtensionInput = new QLineEdit();
+sourceExtensionInput.setText(".js"); // Default value
+layout.addWidget(sourceExtensionInput);
+
+// Input for target extension
+const targetExtensionLabel = new QLabel();
+targetExtensionLabel.setText("Target Extension (e.g., .ts):");
+layout.addWidget(targetExtensionLabel);
+
+const targetExtensionInput = new QLineEdit();
+targetExtensionInput.setText(".ts"); // Default value
+layout.addWidget(targetExtensionInput);
 
 const selectDirButton = new QPushButton();
 selectDirButton.setText("Select Directory");
-layout.addWidget(selectDirButton); // Ensure button is added to layout
+layout.addWidget(selectDirButton);
 
 const changeExtensionsButton = new QPushButton();
-changeExtensionsButton.setText("Change .js to .ts");
-layout.addWidget(changeExtensionsButton); // Ensure button is added to layout
+changeExtensionsButton.setText("Change Extensions");
+layout.addWidget(changeExtensionsButton);
 
 // Set the central widget
-win.setCentralWidget(centralWidget); // This should happen after all widgets are added
+win.setCentralWidget(centralWidget);
+
+// Function to update the affected file count
+function updateAffectedFileCount(directoryPath) {
+  const sourceExtension = sourceExtensionInput.text();
+  const affectedFileCount = listFilesRecursively(directoryPath).filter((file) =>
+    file.endsWith(sourceExtension)
+  ).length;
+
+  jsFileCountLabel.setText(`Files to be affected: ${affectedFileCount}`);
+}
 
 // Event: Select directory and list files recursively
 selectDirButton.addEventListener("clicked", () => {
   const fileDialog = new QFileDialog();
-  fileDialog.setFileMode(2); // 2 = Directory selection mode
+  fileDialog.setFileMode(2); // Use 2 for Directory mode directly
 
   fileDialog.exec();
   const selectedFiles = fileDialog.selectedFiles();
@@ -55,47 +93,63 @@ selectDirButton.addEventListener("clicked", () => {
     const directoryPath = selectedFiles[0];
     pathInput.setText(directoryPath);
 
-    // Clear previous list
-    fileListWidget.clear();
+    // Clear previous tree
+    fileTreeWidget.clear();
 
-    // List all files
-    const files = listFilesRecursively(directoryPath);
-    files.forEach((file) => {
-      const fileItem = new QListWidgetItem(file);
-      fileListWidget.addItem(fileItem);
-    });
+    // List all files and directories in the tree
+    const rootItem = new QTreeWidgetItem([directoryPath]);
+    fileTreeWidget.addTopLevelItem(rootItem);
+
+    // Populate the tree and update the affected file count
+    populateTreeWithFiles(rootItem, directoryPath);
+    updateAffectedFileCount(directoryPath);
   }
 });
 
-// Event: Change .js extensions to .ts
+// Event: Change file extensions
 changeExtensionsButton.addEventListener("clicked", () => {
   const directoryPath = pathInput.text();
+  const sourceExtension = sourceExtensionInput.text();
+  const targetExtension = targetExtensionInput.text();
+
   if (directoryPath) {
-    const files = listFilesRecursively(directoryPath);
-    files.forEach((file) => {
-      if (file.endsWith(".js")) {
-        const newFile = file.replace(".js", ".ts");
+    const affectedFileCount = changeFileExtensions(
+      directoryPath,
+      sourceExtension,
+      targetExtension
+    );
 
-        fs.renameSync(file, newFile);
-      }
-      if (file.endsWith(".jsx")) {
-        const newFile = file.replace(".jsx", ".tsx");
+    // Refresh tree view after renaming
+    fileTreeWidget.clear();
+    const rootItem = new QTreeWidgetItem([directoryPath]);
+    fileTreeWidget.addTopLevelItem(rootItem);
+    populateTreeWithFiles(rootItem, directoryPath);
 
-        fs.renameSync(file, newFile);
-      }
-    });
-
-    // Refresh file list after renaming
-    fileListWidget.clear();
-    const updatedFiles = listFilesRecursively(directoryPath);
-    updatedFiles.forEach((file) => {
-      const fileItem = new QListWidgetItem(file);
-      fileListWidget.addItem(fileItem);
-    });
+    // Update the label after renaming
+    jsFileCountLabel.setText(`Files affected: ${affectedFileCount}`);
   }
 });
 
-// Function to list all files recursively
+// Update affected file count when extensions change
+sourceExtensionInput.addEventListener("textChanged", () => {
+  const directoryPath = pathInput.text();
+  if (directoryPath) {
+    updateAffectedFileCount(directoryPath);
+  }
+});
+
+targetExtensionInput.addEventListener("textChanged", () => {
+  const directoryPath = pathInput.text();
+  if (directoryPath) {
+    updateAffectedFileCount(directoryPath);
+  }
+});
+
+// Show the window
+win.show();
+global.win = win; // Prevent garbage collection
+
+// Utility functions
 function listFilesRecursively(dir) {
   let results = [];
   const list = fs.readdirSync(dir);
@@ -103,7 +157,6 @@ function listFilesRecursively(dir) {
     const filePath = path.join(dir, file);
     const stat = fs.statSync(filePath);
     if (stat && stat.isDirectory()) {
-      // Recursively list files in subdirectories
       results = results.concat(listFilesRecursively(filePath));
     } else {
       results.push(filePath);
@@ -112,7 +165,32 @@ function listFilesRecursively(dir) {
   return results;
 }
 
-// Show the window
-win.show();
+function changeFileExtensions(directoryPath, sourceExtension, targetExtension) {
+  const files = listFilesRecursively(directoryPath);
+  let affectedFileCount = 0;
 
-global.win = win; // Prevent garbage collection
+  files.forEach((file) => {
+    if (file.endsWith(sourceExtension)) {
+      const newFile = file.replace(sourceExtension, targetExtension);
+      fs.renameSync(file, newFile);
+      affectedFileCount++;
+    }
+  });
+  return affectedFileCount;
+}
+
+function populateTreeWithFiles(treeItem, dirPath) {
+  const items = fs.readdirSync(dirPath);
+  items.forEach((item) => {
+    const fullPath = path.join(dirPath, item);
+    const stat = fs.statSync(fullPath);
+    const childItem = new QTreeWidgetItem([item]);
+
+    if (stat.isDirectory()) {
+      treeItem.addChild(childItem);
+      populateTreeWithFiles(childItem, fullPath); // Populate subdirectories
+    } else {
+      treeItem.addChild(childItem);
+    }
+  });
+}
