@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "dev": "qode ./index.js"
+  },
+  "dependencies": {
+    "@nodegui/nodegui": "^0.68.0",
+    "@nodegui/qode": "^18.12.1"
+  }
+}
