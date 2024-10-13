@@ -110,7 +110,7 @@ function updateAffectedFileCount(directoryPath) {
 selectDirButton.addEventListener("clicked", () => {
   const fileDialog = new QFileDialog();
   fileDialog.setFileMode(2); // Use 2 for Directory mode directly
-
+  fileDialog.directoryPath = "./abc";
   fileDialog.exec();
   const selectedFiles = fileDialog.selectedFiles();
 
@@ -132,7 +132,6 @@ selectDirButton.addEventListener("clicked", () => {
 });
 
 // Event: Change file extensions
-// Event: Change file extensions
 changeExtensionsButton.addEventListener("clicked", () => {
   const directoryPath = pathInput.text();
 
@@ -141,6 +140,8 @@ changeExtensionsButton.addEventListener("clicked", () => {
     sourceExtensionInput.text(),
     targetExtensionInput.text()
   );
+
+  console.log("extensionPairs", extensionPairs);
 
   // Change additional pairs
   extensionPairs.forEach((pair) => {
@@ -189,6 +190,8 @@ addPairButton.addEventListener("clicked", () => {
 
   // Store the new pair when the inputs change
   newSourceInput.addEventListener("textChanged", () => {
+    console.log("count in newSourceInput", count);
+
     extensionPairs.push({
       source: newSourceInput.text(),
       target: newTargetInput.text(),
@@ -197,6 +200,7 @@ addPairButton.addEventListener("clicked", () => {
   });
 
   newTargetInput.addEventListener("textChanged", () => {
+    console.log("count in newTargetInput", count);
     extensionPairs.push({
       source: newSourceInput.text(),
       target: newTargetInput.text(),
