@@ -1,12 +1,12 @@
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
 /**
  * Recursively lists all files in a directory.
  * @param {string} dir - Directory path
  * @returns {Array<string>} - List of file paths
  */
-function listFilesRecursively(dir) {
+export function listFilesRecursively(dir) {
   let results = [];
   const list = fs.readdirSync(dir);
   list.forEach((file) => {
@@ -28,7 +28,11 @@ function listFilesRecursively(dir) {
  * @param {string} targetExtension - The target file extension
  * @returns {number} - The count of affected files
  */
-function changeFileExtensions(directoryPath, sourceExtension, targetExtension) {
+export function changeFileExtensions(
+  directoryPath,
+  sourceExtension,
+  targetExtension
+) {
   const files = listFilesRecursively(directoryPath);
   let affectedFileCount = 0;
 
@@ -42,5 +46,3 @@ function changeFileExtensions(directoryPath, sourceExtension, targetExtension) {
 
   return affectedFileCount;
 }
-
-module.exports = { listFilesRecursively, changeFileExtensions };

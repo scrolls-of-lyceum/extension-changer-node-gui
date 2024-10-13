@@ -1,4 +1,4 @@
-const {
+import {
   QMainWindow,
   QWidget,
   QLabel,
@@ -8,9 +8,13 @@ const {
   QFileDialog,
   QTreeWidget,
   QTreeWidgetItem,
-} = require("@nodegui/nodegui");
-const fs = require("fs");
-const path = require("path");
+} from "@nodegui/nodegui";
+
+import { populateTreeWithFiles } from "./utils/uiUtils.js";
+import {
+  listFilesRecursively,
+  changeFileExtensions,
+} from "./utils/fileUtils.js";
 
 // Create a window
 const win = new QMainWindow();
@@ -149,48 +153,48 @@ targetExtensionInput.addEventListener("textChanged", () => {
 win.show();
 global.win = win; // Prevent garbage collection
 
-// Utility functions
-function listFilesRecursively(dir) {
-  let results = [];
-  const list = fs.readdirSync(dir);
-  list.forEach((file) => {
-    const filePath = path.join(dir, file);
-    const stat = fs.statSync(filePath);
-    if (stat && stat.isDirectory()) {
-      results = results.concat(listFilesRecursively(filePath));
-    } else {
-      results.push(filePath);
-    }
-  });
-  return results;
-}
+// // Utility functions
+// function listFilesRecursively(dir) {
+//   let results = [];
+//   const list = fs.readdirSync(dir);
+//   list.forEach((file) => {
+//     const filePath = path.join(dir, file);
+//     const stat = fs.statSync(filePath);
+//     if (stat && stat.isDirectory()) {
+//       results = results.concat(listFilesRecursively(filePath));
+//     } else {
+//       results.push(filePath);
+//     }
+//   });
+//   return results;
+// }
 
-function changeFileExtensions(directoryPath, sourceExtension, targetExtension) {
-  const files = listFilesRecursively(directoryPath);
-  let affectedFileCount = 0;
+// function changeFileExtensions(directoryPath, sourceExtension, targetExtension) {
+//   const files = listFilesRecursively(directoryPath);
+//   let affectedFileCount = 0;
 
-  files.forEach((file) => {
-    if (file.endsWith(sourceExtension)) {
-      const newFile = file.replace(sourceExtension, targetExtension);
-      fs.renameSync(file, newFile);
-      affectedFileCount++;
-    }
-  });
-  return affectedFileCount;
-}
+//   files.forEach((file) => {
+//     if (file.endsWith(sourceExtension)) {
+//       const newFile = file.replace(sourceExtension, targetExtension);
+//       fs.renameSync(file, newFile);
+//       affectedFileCount++;
+//     }
+//   });
+//   return affectedFileCount;
+// }
 
-function populateTreeWithFiles(treeItem, dirPath) {
-  const items = fs.readdirSync(dirPath);
-  items.forEach((item) => {
-    const fullPath = path.join(dirPath, item);
-    const stat = fs.statSync(fullPath);
-    const childItem = new QTreeWidgetItem([item]);
+// function populateTreeWithFiles(treeItem, dirPath) {
+//   const items = fs.readdirSync(dirPath);
+//   items.forEach((item) => {
+//     const fullPath = path.join(dirPath, item);
+//     const stat = fs.statSync(fullPath);
+//     const childItem = new QTreeWidgetItem([item]);
 
-    if (stat.isDirectory()) {
-      treeItem.addChild(childItem);
-      populateTreeWithFiles(childItem, fullPath); // Populate subdirectories
-    } else {
-      treeItem.addChild(childItem);
-    }
-  });
-}
+//     if (stat.isDirectory()) {
+//       treeItem.addChild(childItem);
+//       populateTreeWithFiles(childItem, fullPath); // Populate subdirectories
+//     } else {
+//       treeItem.addChild(childItem);
+//     }
+//   });
+// }

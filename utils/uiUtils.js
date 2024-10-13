@@ -1,12 +1,13 @@
-const { QTreeWidgetItem } = require("@nodegui/nodegui");
-const fs = require("fs");
+import { QTreeWidgetItem } from "@nodegui/nodegui";
+import fs from "fs";
+import path from "path";
 
 /**
  * Populates a QTreeWidget with files and directories.
  * @param {QTreeWidgetItem} treeItem - The tree item to populate
  * @param {string} dirPath - The directory path
  */
-function populateTreeWithFiles(treeItem, dirPath) {
+export function populateTreeWithFiles(treeItem, dirPath) {
   const items = fs.readdirSync(dirPath);
 
   items.forEach((item) => {
@@ -21,5 +22,3 @@ function populateTreeWithFiles(treeItem, dirPath) {
     }
   });
 }
-
-module.exports = { populateTreeWithFiles };
