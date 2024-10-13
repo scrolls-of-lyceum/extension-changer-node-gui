@@ -72,6 +72,17 @@ const changeExtensionsButton = new QPushButton();
 changeExtensionsButton.setText("Change Extensions");
 layout.addWidget(changeExtensionsButton);
 
+// Button for adding new extension pairs
+const addPairButton = new QPushButton();
+addPairButton.setText("+");
+layout.addWidget(addPairButton);
+
+// Container for dynamic extension inputs
+const dynamicExtensionContainer = new QWidget();
+const dynamicLayout = new FlexLayout();
+dynamicExtensionContainer.setLayout(dynamicLayout);
+layout.addWidget(dynamicExtensionContainer);
+
 // Set the central widget
 win.setCentralWidget(centralWidget);
 
@@ -149,52 +160,31 @@ targetExtensionInput.addEventListener("textChanged", () => {
   }
 });
 
+// Event: Add new pair of extensions
+addPairButton.addEventListener("clicked", () => {
+  const newSourceInput = new QLineEdit();
+  const newTargetInput = new QLineEdit();
+  newSourceInput.setPlaceholderText("New Source Extension");
+  newTargetInput.setPlaceholderText("New Target Extension");
+
+  dynamicLayout.addWidget(newSourceInput);
+  dynamicLayout.addWidget(newTargetInput);
+
+  newSourceInput.addEventListener("textChanged", () => {
+    const directoryPath = pathInput.text();
+    if (directoryPath) {
+      updateAffectedFileCount(directoryPath);
+    }
+  });
+
+  newTargetInput.addEventListener("textChanged", () => {
+    const directoryPath = pathInput.text();
+    if (directoryPath) {
+      updateAffectedFileCount(directoryPath);
+    }
+  });
+});
+
 // Show the window
 win.show();
 global.win = win; // Prevent garbage collection
-
-// // Utility functions
-// function listFilesRecursively(dir) {
-//   let results = [];
-//   const list = fs.readdirSync(dir);
-//   list.forEach((file) => {
-//     const filePath = path.join(dir, file);
-//     const stat = fs.statSync(filePath);
-//     if (stat && stat.isDirectory()) {
-//       results = results.concat(listFilesRecursively(filePath));
-//     } else {
-//       results.push(filePath);
-//     }
-//   });
-//   return results;
-// }
-
-// function changeFileExtensions(directoryPath, sourceExtension, targetExtension) {
-//   const files = listFilesRecursively(directoryPath);
-//   let affectedFileCount = 0;
-
-//   files.forEach((file) => {
-//     if (file.endsWith(sourceExtension)) {
-//       const newFile = file.replace(sourceExtension, targetExtension);
-//       fs.renameSync(file, newFile);
-//       affectedFileCount++;
-//     }
-//   });
-//   return affectedFileCount;
-// }
-
-// function populateTreeWithFiles(treeItem, dirPath) {
-//   const items = fs.readdirSync(dirPath);
-//   items.forEach((item) => {
-//     const fullPath = path.join(dirPath, item);
-//     const stat = fs.statSync(fullPath);
-//     const childItem = new QTreeWidgetItem([item]);
-
-//     if (stat.isDirectory()) {
-//       treeItem.addChild(childItem);
-//       populateTreeWithFiles(childItem, fullPath); // Populate subdirectories
-//     } else {
-//       treeItem.addChild(childItem);
-//     }
-//   });
-// }

@@ -1,11 +1,6 @@
 import fs from "fs";
 import path from "path";
 
-/**
- * Recursively lists all files in a directory.
- * @param {string} dir - Directory path
- * @returns {Array<string>} - List of file paths
- */
 export function listFilesRecursively(dir) {
   let results = [];
   const list = fs.readdirSync(dir);
@@ -21,13 +16,6 @@ export function listFilesRecursively(dir) {
   return results;
 }
 
-/**
- * Renames files with the specified source extension to the target extension.
- * @param {string} directoryPath - The directory containing files
- * @param {string} sourceExtension - The source file extension
- * @param {string} targetExtension - The target file extension
- * @returns {number} - The count of affected files
- */
 export function changeFileExtensions(
   directoryPath,
   sourceExtension,
@@ -43,6 +31,5 @@ export function changeFileExtensions(
       affectedFileCount++;
     }
   });
-
   return affectedFileCount;
 }
