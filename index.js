@@ -9,26 +9,22 @@ const {
   QListWidget,
   QListWidgetItem,
 } = require("@nodegui/nodegui");
-
 const fs = require("fs");
 const path = require("path");
 
 // Create a window
-
 const win = new QMainWindow();
 win.setWindowTitle("File Extension Changer");
 
 // Create the central widget and layout
 const centralWidget = new QWidget();
-// const layout = new QVBoxLayout();
 const layout = new FlexLayout();
+centralWidget.setLayout(layout); // Set layout once
 
-centralWidget.setLayout(layout);
-layout.addWidget(new QLabel());
 // Add input fields and buttons
 const inputLabel = new QLabel();
 inputLabel.setText("Selected Directory:");
-layout.addWidget(inputLabel);
+layout.addWidget(inputLabel); // Correctly add widget to layout
 
 const pathInput = new QLineEdit();
 layout.addWidget(pathInput);
@@ -38,43 +34,19 @@ layout.addWidget(fileListWidget);
 
 const selectDirButton = new QPushButton();
 selectDirButton.setText("Select Directory");
-layout.addWidget(selectDirButton);
+layout.addWidget(selectDirButton); // Ensure button is added to layout
 
 const changeExtensionsButton = new QPushButton();
 changeExtensionsButton.setText("Change .js to .ts");
-layout.addWidget(changeExtensionsButton);
+layout.addWidget(changeExtensionsButton); // Ensure button is added to layout
 
-centralWidget.setLayout(layout);
-win.setCentralWidget(centralWidget);
-
-// Event: Select directory and list files recursively
-// selectDirButton.addEventListener("clicked", () => {
-//   const fileDialog = new QFileDialog();
-//   fileDialog.setFileMode(FileMode.Directory); // Use FileMode.Directory here
-
-//   fileDialog.exec();
-//   const selectedFiles = fileDialog.selectedFiles();
-
-//   if (selectedFiles.length > 0) {
-//     const directoryPath = selectedFiles[0];
-//     pathInput.setText(directoryPath);
-
-//     // Clear previous list
-//     fileListWidget.clear();
-
-//     // List all files
-//     const files = listFilesRecursively(directoryPath);
-//     files.forEach((file) => {
-//       const fileItem = new QListWidgetItem(file);
-//       fileListWidget.addItem(fileItem);
-//     });
-//   }
-// });
+// Set the central widget
+win.setCentralWidget(centralWidget); // This should happen after all widgets are added
 
 // Event: Select directory and list files recursively
 selectDirButton.addEventListener("clicked", () => {
   const fileDialog = new QFileDialog();
-  fileDialog.setFileMode(QFileDialog.FileMode.Directory);
+  fileDialog.setFileMode(2); // 2 = Directory selection mode
 
   fileDialog.exec();
   const selectedFiles = fileDialog.selectedFiles();
@@ -103,6 +75,12 @@ changeExtensionsButton.addEventListener("clicked", () => {
     files.forEach((file) => {
       if (file.endsWith(".js")) {
         const newFile = file.replace(".js", ".ts");
+
+        fs.renameSync(file, newFile);
+      }
+      if (file.endsWith(".jsx")) {
+        const newFile = file.replace(".jsx", ".tsx");
+
         fs.renameSync(file, newFile);
       }
     });
