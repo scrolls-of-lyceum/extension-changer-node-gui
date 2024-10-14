@@ -34,3 +34,14 @@ export function changeFileExtensions(
   });
   return affectedFileCount;
 }
+export function getFileCount(directoryPath, sourceExtension) {
+  const files = listFilesRecursively(directoryPath);
+  let affectedFileCount = 0;
+
+  files.forEach((file) => {
+    if (file.endsWith(sourceExtension)) {
+      affectedFileCount++;
+    }
+  });
+  return affectedFileCount;
+}

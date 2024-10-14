@@ -15,6 +15,7 @@ import {
   listFilesRecursively,
   changeFileExtensions,
 } from "./utils/fileUtils.js";
+import { idGen, idGenerator } from "./utils/funcs.js";
 
 // Create a window
 const win = new QMainWindow();
@@ -33,6 +34,10 @@ const inputLabel = new QLabel();
 inputLabel.setText("Selected Directory:");
 layout.addWidget(inputLabel);
 
+const selectDirButton = new QPushButton();
+selectDirButton.setText("Select Directory");
+layout.addWidget(selectDirButton);
+
 const pathInput = new QLineEdit();
 layout.addWidget(pathInput);
 
@@ -40,11 +45,6 @@ layout.addWidget(pathInput);
 const fileTreeWidget = new QTreeWidget();
 fileTreeWidget.setHeaderLabels(["File/Folder"]);
 layout.addWidget(fileTreeWidget);
-
-// Label to show the count of affected files
-const jsFileCountLabel = new QLabel();
-jsFileCountLabel.setText("Files to be affected: 0");
-layout.addWidget(jsFileCountLabel);
 
 // Input for source extension
 const sourceExtensionLabel = new QLabel();
@@ -64,18 +64,19 @@ const targetExtensionInput = new QLineEdit();
 targetExtensionInput.setText(".ts"); // Default value
 layout.addWidget(targetExtensionInput);
 
-const selectDirButton = new QPushButton();
-selectDirButton.setText("Select Directory");
-layout.addWidget(selectDirButton);
+// Button for adding new extension pairs
+const addPairButton = new QPushButton();
+addPairButton.setText("+");
+layout.addWidget(addPairButton);
 
 const changeExtensionsButton = new QPushButton();
 changeExtensionsButton.setText("Change Extensions");
 layout.addWidget(changeExtensionsButton);
 
-// Button for adding new extension pairs
-const addPairButton = new QPushButton();
-addPairButton.setText("+");
-layout.addWidget(addPairButton);
+// Label to show the count of affected files
+const jsFileCountLabel = new QLabel();
+jsFileCountLabel.setText("Files to be affected: 0");
+layout.addWidget(jsFileCountLabel);
 
 // Container for dynamic extension inputs
 const dynamicExtensionContainer = new QWidget();
@@ -83,14 +84,17 @@ const dynamicLayout = new FlexLayout();
 dynamicExtensionContainer.setLayout(dynamicLayout);
 layout.addWidget(dynamicExtensionContainer);
 
+//! TODO update this based on new requirement
 // Store new extension pairs
-const extensionPairs = [];
+const extensionPairs = []; //{id:[source , target]
 
 // Set the central widget
 win.setCentralWidget(centralWidget);
 
 // Function to update the affected file count
 function updateAffectedFileCount(directoryPath) {
+  console.log("extensionPairs", extensionPairs);
+
   const allSourceExtensions = [
     sourceExtensionInput.text(),
     ...extensionPairs.map((pair) => pair.source),
@@ -103,7 +107,11 @@ function updateAffectedFileCount(directoryPath) {
     );
   }, 0);
 
-  jsFileCountLabel.setText(`Files to be affected: ${affectedFileCount}`);
+  updateAffectLabel(`Files to be affected: ${affectedFileCount}`);
+}
+
+function updateAffectLabel(text) {
+  jsFileCountLabel.setText(`${text}`);
 }
 
 // Event: Select directory and list files recursively
@@ -141,8 +149,6 @@ changeExtensionsButton.addEventListener("clicked", () => {
     targetExtensionInput.text()
   );
 
-  console.log("extensionPairs", extensionPairs);
-
   // Change additional pairs
   extensionPairs.forEach((pair) => {
     affectedFileCounts += changeFileExtensions(
@@ -178,10 +184,12 @@ addPairButton.addEventListener("clicked", () => {
   const newTargetLabel = new QLabel();
 
   newSourceLabel.setText("New Source Extension:");
-  newTargetInput.setPlaceholderText(".txt");
+  newSourceInput.setPlaceholderText(".tft");
+  newSourceInput.setObjectName(idGen.next().value);
 
   newTargetLabel.setText("New Target Extension:");
-  newSourceInput.setPlaceholderText(".tft");
+  newTargetInput.setPlaceholderText(".txt");
+  newTargetInput.setObjectName(idGen.next().value);
 
   dynamicLayout.addWidget(newSourceLabel);
   dynamicLayout.addWidget(newSourceInput);
@@ -190,20 +198,24 @@ addPairButton.addEventListener("clicked", () => {
 
   // Store the new pair when the inputs change
   newSourceInput.addEventListener("textChanged", () => {
-    console.log("count in newSourceInput", count);
-
+    console.log("newSourceInput", newSourceInput.objectName());
+    const id = newSourceInput.objectName();
     extensionPairs.push({
-      source: newSourceInput.text(),
-      target: newTargetInput.text(),
+      [id]: {
+        source: newSourceInput.text(),
+        target: newTargetInput.text(),
+      },
     });
     updateAffectedFileCount(pathInput.text());
   });
 
   newTargetInput.addEventListener("textChanged", () => {
-    console.log("count in newTargetInput", count);
+    const id = newTargetInput.objectName();
     extensionPairs.push({
-      source: newSourceInput.text(),
-      target: newTargetInput.text(),
+      [id]: {
+        source: newSourceInput.text(),
+        target: newTargetInput.text(),
+      },
     });
     updateAffectedFileCount(pathInput.text());
   });
