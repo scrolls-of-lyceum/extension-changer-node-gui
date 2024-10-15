@@ -1,10 +1,14 @@
 {
   "type": "module",
   "scripts": {
-    "dev": "qode ./index.js"
+    "dev": "nodemon --exec qode ./index.js ",
+    "show": "qode ./index.js"
   },
   "dependencies": {
     "@nodegui/nodegui": "^0.68.0",
     "@nodegui/qode": "^18.12.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
   }
 }
