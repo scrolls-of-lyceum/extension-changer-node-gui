@@ -151,11 +151,9 @@ changeExtensionsButton.addEventListener("clicked", () => {
 
   // Change additional pairs
   extensionPairs.forEach((pair) => {
-    affectedFileCounts += changeFileExtensions(
-      directoryPath,
-      pair.source,
-      pair.target
-    );
+    console.log("single pair", pair);
+
+    affectedFileCounts += changeFileExtensions(directoryPath, pair[0], pair[1]);
   });
 
   // Refresh tree view after renaming
@@ -183,13 +181,14 @@ addPairButton.addEventListener("clicked", () => {
   const newSourceLabel = new QLabel();
   const newTargetLabel = new QLabel();
 
+  const idx = extensionPairs.length;
   newSourceLabel.setText("New Source Extension:");
   newSourceInput.setPlaceholderText(".tft");
-  newSourceInput.setObjectName(idGen.next().value);
+  newSourceInput.setObjectName("" + idx);
 
   newTargetLabel.setText("New Target Extension:");
   newTargetInput.setPlaceholderText(".txt");
-  newTargetInput.setObjectName(idGen.next().value);
+  newTargetInput.setObjectName("" + idx);
 
   dynamicLayout.addWidget(newSourceLabel);
   dynamicLayout.addWidget(newSourceInput);
@@ -199,24 +198,18 @@ addPairButton.addEventListener("clicked", () => {
   // Store the new pair when the inputs change
   newSourceInput.addEventListener("textChanged", () => {
     console.log("newSourceInput", newSourceInput.objectName());
-    const id = newSourceInput.objectName();
-    extensionPairs.push({
-      [id]: {
-        source: newSourceInput.text(),
-        target: newTargetInput.text(),
-      },
-    });
+    const idx = +newSourceInput.objectName();
+
+    extensionPairs[idx] = [newSourceInput.text(), newTargetInput.text()];
+
     updateAffectedFileCount(pathInput.text());
   });
 
   newTargetInput.addEventListener("textChanged", () => {
-    const id = newTargetInput.objectName();
-    extensionPairs.push({
-      [id]: {
-        source: newSourceInput.text(),
-        target: newTargetInput.text(),
-      },
-    });
+    const idx = +newTargetInput.objectName();
+
+    extensionPairs[idx] = [newSourceInput.text(), newTargetInput.text()];
+
     updateAffectedFileCount(pathInput.text());
   });
 });
