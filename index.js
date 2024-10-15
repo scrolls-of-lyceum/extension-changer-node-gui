@@ -15,7 +15,6 @@ import {
   listFilesRecursively,
   changeFileExtensions,
 } from "./utils/fileUtils.js";
-import { idGen, idGenerator } from "./utils/funcs.js";
 
 // Create a window
 const win = new QMainWindow();
@@ -27,66 +26,89 @@ win.resize(800, 600);
 // Create the central widget and layout
 const centralWidget = new QWidget();
 const layout = new FlexLayout();
+
 centralWidget.setLayout(layout);
+
+const selectDirButton = new QPushButton();
+selectDirButton.setText("Select Directory");
+selectDirButton.setInlineStyle(
+  "width:350px; padding:6px 3px; color:blue ; cursor: pointer;margin-left:auto;margin-right:auto; "
+);
+layout.addWidget(selectDirButton);
 
 // Add input fields and buttons
 const inputLabel = new QLabel();
 inputLabel.setText("Selected Directory:");
+inputLabel.setInlineStyle(
+  "margin: 10px;color:green; margin-bottom:0; background:transparent"
+);
 layout.addWidget(inputLabel);
 
-const selectDirButton = new QPushButton();
-selectDirButton.setText("Select Directory");
-layout.addWidget(selectDirButton);
-
+//Path input
 const pathInput = new QLineEdit();
+pathInput.setInlineStyle(
+  "margin: 2px 8px; margin-bottom:6px;padding:3px; background:transparent;border:1px solid #999;border-radius:6px;"
+);
 layout.addWidget(pathInput);
 
 // Create a QTreeWidget to display the file tree
 const fileTreeWidget = new QTreeWidget();
 fileTreeWidget.setHeaderLabels(["File/Folder"]);
+fileTreeWidget.setInlineStyle("margin:0px 8px ;");
 layout.addWidget(fileTreeWidget);
 
 // Input for source extension
 const sourceExtensionLabel = new QLabel();
 sourceExtensionLabel.setText("Source Extension (e.g., .js):");
+sourceExtensionLabel.setInlineStyle("margin:0px 8px ; width:180px");
 layout.addWidget(sourceExtensionLabel);
 
 const sourceExtensionInput = new QLineEdit();
 sourceExtensionInput.setText(".js"); // Default value
+sourceExtensionInput.setInlineStyle("margin:0px 8px ;  width:180px");
 layout.addWidget(sourceExtensionInput);
 
 // Input for target extension
 const targetExtensionLabel = new QLabel();
 targetExtensionLabel.setText("Target Extension (e.g., .ts):");
+targetExtensionLabel.setInlineStyle("margin:0px 8px ; width:180px");
 layout.addWidget(targetExtensionLabel);
 
 const targetExtensionInput = new QLineEdit();
 targetExtensionInput.setText(".ts"); // Default value
+targetExtensionInput.setInlineStyle("margin:0px 8px ; width:180px");
 layout.addWidget(targetExtensionInput);
 
 // Button for adding new extension pairs
 const addPairButton = new QPushButton();
 addPairButton.setText("+");
+addPairButton.setInlineStyle("width:120px;margin:3px auto");
 layout.addWidget(addPairButton);
+
+// Container for dynamic extension inputs
+const dynamicExtensionContainer = new QWidget();
+const dynamicLayout = new FlexLayout();
+dynamicExtensionContainer.setInlineStyle("padding:8px ;");
+dynamicExtensionContainer.setLayout(dynamicLayout);
+
+layout.addWidget(dynamicExtensionContainer);
 
 const changeExtensionsButton = new QPushButton();
 changeExtensionsButton.setText("Change Extensions");
+changeExtensionsButton.setInlineStyle(
+  "color:green; font-weight:bold ; width:250px ; margin :2px auto; background:#4f4 ; padding:6px ; "
+);
 layout.addWidget(changeExtensionsButton);
 
 // Label to show the count of affected files
 const jsFileCountLabel = new QLabel();
 jsFileCountLabel.setText("Files to be affected: 0");
+jsFileCountLabel.setInlineStyle(
+  "margin: 0 12px; color:#333; font-weight:bold;"
+);
 layout.addWidget(jsFileCountLabel);
-
-// Container for dynamic extension inputs
-const dynamicExtensionContainer = new QWidget();
-const dynamicLayout = new FlexLayout();
-dynamicExtensionContainer.setLayout(dynamicLayout);
-layout.addWidget(dynamicExtensionContainer);
-
-//! TODO update this based on new requirement
 // Store new extension pairs
-const extensionPairs = []; //{id:[source , target]
+const extensionPairs = [];
 
 // Set the central widget
 win.setCentralWidget(centralWidget);
@@ -183,11 +205,15 @@ addPairButton.addEventListener("clicked", () => {
 
   const idx = extensionPairs.length;
   newSourceLabel.setText("New Source Extension:");
+  newSourceLabel.setInlineStyle("margin:0px 8px; width:180px");
   newSourceInput.setPlaceholderText(".tft");
   newSourceInput.setObjectName("" + idx);
+  newSourceInput.setInlineStyle("margin:0px 8px; width:180px");
 
   newTargetLabel.setText("New Target Extension:");
+  newTargetLabel.setInlineStyle("margin:0px 8px; width:180px");
   newTargetInput.setPlaceholderText(".txt");
+  newTargetInput.setInlineStyle("margin:0px 8px; width:180px;");
   newTargetInput.setObjectName("" + idx);
 
   dynamicLayout.addWidget(newSourceLabel);
